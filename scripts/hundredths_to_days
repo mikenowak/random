@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+# convert time ine hundredths of seconds to days / minutes / hours
+
+days=`expr $1 / 8640000`
+tsub=`expr $days \* 8640000`
+
+tmptime=`expr $1 - $tsub`
+hours=`expr $tmptime / 360000`
+tsub=`expr $hours \* 360000`
+
+tmptime=`expr $tmptime - $tsub`
+minutes=`expr $tmptime / 6000`
+tsub=`expr $minutes \* 6000`
+
+tmptime=`expr $tmptime - $tsub`
+seconds=`expr $tmptime / 100` 
+
+echo "$1 = $days days, $hours hours, $minutes minutes and $seconds seconds"
