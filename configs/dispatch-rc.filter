@@ -1,0 +1,61 @@
+#
+# Procmail filter file for the dispatch sysadmin account
+#
+# Default action is to forward mail to the sysadmin@ account 
+#
+
+# Filter bounces and other useless stuff
+:0
+* ^From:.*mailer-daemon@
+/dev/null
+
+:0
+* ^Auto-Submitted:.auto-
+/dev/null
+
+:0
+* ^Content-Type:\ multipart/report;\ report-type=delivery-status
+/dev/null
+
+:0
+* ^Subject:\ Delivery\ Status\ Notification
+/dev/null
+
+:0
+* ^Subject:\ Undeliverable
+/dev/null
+
+# Extract Explorer
+:0:
+* ^From: .*@.*.blastwave.org
+* ^Subject: Blastwave.org Inc. NK000000 explorer*
+| /opt/csw/bin/munpack -q -C /export/home/dispatch/explorer
+
+# Cron Outputs
+:0
+* ^Subject: Output from "cron" command
+{
+  :0B
+  *? egrep -is "WARNING: EXP_REPLY not set!"
+  /dev/null
+
+  :0
+  !sysadmin
+}
+
+# Mail Failures
+:0
+* ^From[  ]*MAILER-DAEMON
+* ^TO_postmaster
+{
+  :0:
+  * ^Subject: Postmaster notify: see transcript for details
+  /dev/null
+
+  :0
+  !all-admins
+}
+
+# Accept all the rest to the default mailbox
+:0
+!sysadmin

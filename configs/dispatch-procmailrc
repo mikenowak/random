@@ -1,0 +1,15 @@
+#
+# Procmail config for the sysadmin dispatch account
+#
+PATH=/usr/bin:/usr/sbin:/bin:/sbin:/export/home/dispatch/bin
+DROPPRIVS=yes
+COMSAT=no
+VERBOSE=yes
+SHELL=/usr/bin/sh
+PMCONF=/export/home/dispatch/etc
+PMBASE=/export/home/dispatch/var
+MAILDIR=$PMBASE/mail
+LOGFILE=$PMBASE/log/procmail.log
+LOCKFILE=$MAILDIR/.lockmail
+INCLUDERC=$PMCONF/rc.filter
+# EOF
