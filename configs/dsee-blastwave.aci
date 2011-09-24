@@ -1,0 +1,187 @@
+#############################################################################################
+# LDAP ACIs for Blastwave by Michal Nowak  
+#############################################################################################
+# user: anyone
+# access: ou=profile and objectclass=nisDomainObject
+#
+# This allows nisDomainObject lookup
+aci: (target="ldap:///dc=blastwave,dc=org")
+ (targetscope="base")
+ (targetfilter="(objectClass=nisDomainObject)")
+ (targetattr="dc || objectClass || nisDomain")
+ (version 3.0; acl "nisDomainObject lookup for Anonymous user required by new Solaris Native LDAP clients";
+   allow (read, search, compare)
+     userdn="ldap:///anyone"
+ ;)
+# This allows profile lookup
+aci: (target = ldap:///ou=profile,dc=blastwave,dc=org)
+ (targetscope = subtree)
+ (targetfilter="(|(objectClass=organizationalUnit)(objectClass=DUAConfigProfile))")
+ (targetattr="cn || objectClass || authenticationMethod || defaultServerList || defaultSearchBase
+	|| followReferrals || defaultSearchScope || searchTimeLimit ||  credentialLevel || serviceSearchDescriptor
+	|| bindTimeLimit || profileTTL")
+ (version 3.0; acl "DUAConfigProfile lookup for Anonymous user required by new Solaris Native LDAP clients";
+   allow (read, compare, search)
+     userdn="ldap:///anyone"
+ ;)
+#
+#############################################################################################
+# user: solaris-agent
+# access: ou=people, group, aliases, hosts, auto_master, auto_home, auto_shared, auto_direct
+#
+aci: (target="ldap:///ou=people,dc=blastwave,dc=org")
+  (targetscope="subtree")
+  (targetfilter="(|(objectClass=organizationalUnit)(objectClass=person))")
+  (targetattr="uid || objectClass || givenName || sn || cn || mail || gecos || loginShell || homeDirectory
+    || uidNumber || gidNumber ||shadowLastChange || shadowMin || shadowMax || shadowWarning || shadowExpire
+    || shadowInactive || shadowFlag || SolarisAttrKeyValue || inetUserStatus || isMemberOf")
+  (version 3.0; acl "solaris-agent Access to people";
+    allow (read, search, compare)
+      userdn="ldap:///cn=solaris-agent,ou=accounts,dc=blastwave,dc=org"
+  ;)
+aci: (target="ldap:///ou=group,dc=blastwave,dc=org")
+  (targetscope="subtree")
+  (targetfilter="(|(objectClass=organizationalUnit)(objectClass=posixGroup)(objectClass=groupOfUniqueNames))")
+  (targetattr="cn || objectClass || gidNumber || memberUid || uniqueMember || owner")
+  (version 3.0; acl "solaris-agent Access to group";
+    allow (read, search, compare)
+      userdn="ldap:///cn=solaris-agent,ou=accounts,dc=blastwave,dc=org"
+  ;)
+aci: (target="ldap:///ou=aliases,dc=blastwave,dc=org")
+  (targetscope="subtree")
+  (targetfilter="(|(objectClass=organizationalUnit)(objectClass=mailGroup))")
+  (targetattr="cn || objectClass || mail || mgrpRFC822MailMember")
+  (version 3.0; acl "solaris-agent Access to aliases";
+    allow (read, search, compare)
+      userdn="ldap:///cn=solaris-agent,ou=accounts,dc=blastwave,dc=org"
+  ;)
+aci: (target="ldap:///ou=hosts,dc=blastwave,dc=org")
+  (targetscope="subtree")
+  (targetfilter="(|(objectClass=organizationalUnit)(objectClass=ipHost))")
+  (targetattr="cn || objectClass || ipHostNumber")
+  (version 3.0; acl "solaris-agent Access to hosts";
+   allow (read, search, compare)
+     userdn="ldap:///cn=solaris-agent,ou=accounts,dc=blastwave,dc=org"
+  ;)	
+aci: (target="ldap:///automountMapName=auto_master,dc=blastwave,dc=org")
+  (targetscope="subtree")
+  (targetfilter="(|(objectClass=automountMap)(objectClass=automount))")
+  (targetattr="objectClass || automountMapName  || automountKey || automountInformation")
+  (version 3.0; acl "solaris-agent Access to auto_master";
+    allow (read, search, compare)
+      userdn="ldap:///cn=solaris-agent,ou=accounts,dc=blastwave,dc=org"
+  ;)
+aci: (target="ldap:///automountMapName=auto_home,dc=blastwave,dc=org")
+  (targetscope="subtree")
+  (targetfilter="(|(objectClass=automountMap)(objectClass=automount))")
+  (targetattr="objectClass || automountMapName  || automountKey || automountInformation")
+  (version 3.0; acl "solaris-agent Access to auto_home";
+    allow (read, search, compare)
+      userdn="ldap:///cn=solaris-agent,ou=accounts,dc=blastwave,dc=org"
+  ;)
+aci: (target="ldap:///automountMapName=auto_shared,dc=blastwave,dc=org")
+  (targetscope="subtree")
+  (targetfilter="(|(objectClass=automountMap)(objectClass=automount))")
+  (targetattr="objectClass || automountMapName  || automountKey || automountInformation")
+  (version 3.0; acl "solaris-agent Access to auto_shared";
+    allow (read, search, compare)
+      userdn="ldap:///cn=solaris-agent,ou=accounts,dc=blastwave,dc=org"
+  ;)
+aci: (target="ldap:///automountMapName=auto_direct,dc=blastwave,dc=org")
+  (targetscope="subtree")
+  (targetfilter="(|(objectClass=automountMap)(objectClass=automount))")
+  (targetattr="objectClass || automountMapName  || automountKey || automountInformation")
+  (version 3.0; acl "solaris-agent Access to auto_direct";
+    allow (read, search, compare)
+      userdn="ldap:///cn=solaris-agent,ou=accounts,dc=blastwave,dc=org"
+  ;)
+#############################################################################################
+# user: svn-agent
+# access: ou=people (uid || inetUserStatus || ismemberof), ou=group&cn=svn-* (uniqueMember)
+#
+aci: (target="ldap:///ou=group,dc=blastwave,dc=org")
+  (targetscope="subtree")
+  (targetfilter="(&(|(objectClass=organizationalUnit)(objectClass=groupOfUniqueNames))(cn=svn-*))")
+  (targetattr="cn || objectClass || uniqueMember")
+  (version 3.0; acl "svn-agent read access to ou=group";
+    allow (read, search, compare)
+      userdn="ldap:///cn=svn-agent,ou=accounts,dc=blastwave,dc=org"
+  ;)
+aci: (target="ldap:///ou=people,dc=blastwave,dc=org")
+  (targetscope="subtree")
+  (targetfilter="(|(objectClass=organizationalUnit)(objectClass=person))")
+  (targetattr="objectClass || uid || inetUserStatus || ismemberof")
+  (version 3.0; acl "svn-agent read access to ou=people";
+    allow (read, search, compare)
+      userdn="ldap:///cn=svn-agent,ou=accounts,dc=blastwave,dc=org"
+  ;)
+#############################################################################################
+# user: confluence-agent
+# access: ou=people (uid || inetUserStatus || ismemberof), ou=group&cn=confluence-* (uniqueMember)
+#
+aci: (target="ldap:///ou=group,dc=blastwave,dc=org")
+  (targetscope="subtree")
+  (targetfilter="(&(|(objectClass=organizationalUnit)(objectClass=groupOfUniqueNames))(cn=confluence-*))")
+  (targetattr="cn || objectClass || uniqueMember")
+  (version 3.0; acl "confluence-agent read access to ou=group";
+    allow (read, search, compare)
+      userdn="ldap:///cn=confluence-agent,ou=accounts,dc=blastwave,dc=org"
+  ;)
+aci: (target="ldap:///ou=people,dc=blastwave,dc=org")
+  (targetscope="subtree")
+  (targetfilter="(|(objectClass=organizationalUnit)(objectClass=person))")
+  (targetattr="objectClass || uid || mail || givenname || sn || inetUserStatus || ismemberof")
+  (version 3.0; acl "confluence-agent read access to ou=people";
+    allow (read, search, compare)
+      userdn="ldap:///cn=confluence-agent,ou=accounts,dc=blastwave,dc=org"
+  ;)
+#############################################################################################
+# user: jira-agent
+# access: ou=people (uid || inetUserStatus || ismemberof), ou=group&cn=jira-* (uniqueMember)
+#
+aci: (target="ldap:///ou=group,dc=blastwave,dc=org")
+  (targetscope="subtree")
+  (targetfilter="(&(|(objectClass=organizationalUnit)(objectClass=groupOfUniqueNames))(cn=jira-*))")
+  (targetattr="cn || objectClass || uniqueMember")
+  (version 3.0; acl "jira-agent read access to ou=group";
+    allow (read, search, compare)
+      userdn="ldap:///cn=jira-agent,ou=accounts,dc=blastwave,dc=org"
+  ;)
+aci: (target="ldap:///ou=people,dc=blastwave,dc=org")
+  (targetscope="subtree")
+  (targetfilter="(|(objectClass=organizationalUnit)(objectClass=person))")
+  (targetattr="objectClass || uid || mail || givenname || sn || inetUserStatus || ismemberof")
+  (version 3.0; acl "jira-agent read access to ou=people";
+    allow (read, search, compare)
+      userdn="ldap:///cn=jira-agent,ou=accounts,dc=blastwave,dc=org"
+  ;)
+#############################################################################################
+# End User Self Service ACL
+#
+
+aci: (target="ldap:///self")
+  (targetscope="one")
+  (targetfilter="(&(objectClass=person)(inetUserStatus=Active))")
+  (targetattr!="userPassword || passwordHistory || passwordExpirationTime|| passwordExpWarned
+  		|| passwordRetryCount || retryCountResetTime ||accountUnlockTime ||
+  		passwordAllowChangeTime")
+  (version 3.0; acl "User Self Read";
+    allow (read, search, compare)
+      userdn="ldap:///self"
+  ;)
+aci: (targetattr="userPassword || telephoneNumber")
+  (version 3.0; acl "Self Modification"; 
+    allow (write)
+      userdn="ldap:///self"
+  ;) 
+
+# ldap-passreset group members can reset password of other users 
+aci: (target="ldap:///ou=people,dc=blastwave,dc=org")
+   (targetattr = "userPassword")
+   (version 3.0; acl "Allow ldap-passreset group to reset passwords for other users";
+     allow(write)
+       groupdn = "ldap:///cn=ldap-passreset,ou=group,dc=blastwave,dc=org" and ip="192.168.35.7"
+   ;)
+#############################################################################################
+#  EOF EOF EOF EOF EOF EOF EOF EOF EOF EOF EOF EOF EOF EOF EOF EOF EOF EOF EOF EOF EOF EOF  # 
+#############################################################################################
