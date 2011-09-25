@@ -1,0 +1,24 @@
+diff --speed-large-files --minimal -Nru mercurial-server-1.1.orig/Makefile mercurial-server-1.1/Makefile
+--- mercurial-server-1.1.orig/Makefile	2010-12-18 12:37:56.000000000 +0000
++++ mercurial-server-1.1/Makefile	2011-02-07 14:02:35.313785077 +0000
+@@ -18,12 +18,15 @@
+ 
+ installetc:
+ 	$(INSTALL) -d $(DESTDIR)$(ETCDIR)
+-	$(INSTALL) -m 644 -t $(DESTDIR)$(ETCDIR) \
+-	    src/init/conf/access.conf
++#	$(INSTALL) -m 644 -t $(DESTDIR)$(ETCDIR) \
++#	    src/init/conf/access.conf
++	$(INSTALL) -m 644 src/init/conf/access.conf $(DESTDIR)$(ETCDIR)
+ 	$(INSTALL) -d $(DESTDIR)$(ETCDIR)/remote-hgrc.d
+-	$(INSTALL) -m 644 -t $(DESTDIR)$(ETCDIR)/remote-hgrc.d \
+-	    src/init/conf/remote-hgrc.d/access.rc \
+-	    src/init/conf/remote-hgrc.d/logging.rc
++#	$(INSTALL) -m 644 -t $(DESTDIR)$(ETCDIR)/remote-hgrc.d \
++#	    src/init/conf/remote-hgrc.d/access.rc \
++#	    src/init/conf/remote-hgrc.d/logging.rc
++	$(INSTALL) -m 644 src/init/conf/remote-hgrc.d/access.rc $(DESTDIR)$(ETCDIR)/remote-hgrc.d
++	$(INSTALL) -m 644 src/init/conf/remote-hgrc.d/logging.rc $(DESTDIR)$(ETCDIR)/remote-hgrc.d
+ 	$(INSTALL) -d $(DESTDIR)$(ETCDIR)/keys/root
+ 	$(INSTALL) -d $(DESTDIR)$(ETCDIR)/keys/users
+ 
