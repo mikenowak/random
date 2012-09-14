@@ -1,0 +1,59 @@
+#!/bin/bash
+
+echo -n "Enter the name of site to be removed: "
+read sitename
+
+if [ -z "$sitename" ]; then
+  echo "ERROR: Site name is required, exiting."
+  exit 1
+fi
+
+if [ ! -d /sites/$sitename ]; then
+  echo "ERROR: Sitename path '/sites/$sitename' doesn't exists, exiting."
+  exit 1
+fi
+
+if [ ! -r /etc/apache2/sites-available/$sitename ]; then
+  echo "ERROR: Apache2 site config '/etc/apache2/sites-available/$sitename' desn't exists, exiting."
+  exit 1
+fi
+
+mysql --defaults-file=/etc/mysql/debian.cnf --execute="SHOW DATABASES" | awk '{print $1}' | grep -v ^Database$ | grep $sitename >/dev/null 2>&1
+if [ $? == 1 ]; then
+  echo "ERROR: Database '$sitename' doesn't exists in mysql, exiting."
+  exit 1
+fi
+
+egrep "^$sitename:" /etc/ftpd.passwd >/dev/null 2>&1
+if [ $? == 1 ]; then
+  echo "ERROR: FTP account '$sitename' doesn't exists, exiting."
+  exit 1
+fi
+
+a2dissite ${sitename} >/dev/null 2>&1
+service apache2 restart
+rm -f /etc/apache2/sites-available/$sitename
+find /var/log/apache2 -type f -name "${sitename}_*" -exec rm -f {} \;
+
+mysqldump --defaults-file=/etc/mysql/debian.cnf --quote-names --opt --default-character-set=utf8 $sitename > /sites/$sitename/$sitename.sql
+cd /sites
+tar -cf $sitename.tar $sitename/$sitename.sql $sitename/www
+gzip -9 $sitename.tar
+
+rm -fr /sites/$sitename
+find /var/lib/automysqlbackup -type d -name "$sitename" -exec rm -fr {} \;
+
+cat << EOF >> /tmp/$$.sql
+REVOKE ALL PRIVILEGES, GRANT OPTION FROM '$sitename'@'localhost';
+DROP USER '$sitename'@'localhost';
+DROP DATABASE $sitename;
+FLUSH PRIVILEGES;
+EOF
+
+mysql --defaults-file=/etc/mysql/debian.cnf < /tmp/$$.sql
+rm -f /tmp/$$.sql
+
+htpasswd -D /etc/ftpd.passwd $sitename >/dev/null 2>&1
+
+echo "Site $sitename has been removed"
+

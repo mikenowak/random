@@ -1,0 +1,144 @@
+#!/bin/bash
+
+echo -n "Enter the name of site to be created: "
+read sitename
+
+echo -n "Enter the name of domain for site to be created: "
+read domainname
+
+if [ -z "$sitename" ]; then
+  echo "ERROR: Site name is required, exiting."
+  exit 1
+fi
+
+if [ -z "$domainname" ]; then
+  echo "ERROR: Domain name is required, exiting."
+  exit 1
+fi
+
+if [ -d /sites/$sitename ]; then
+  echo "ERROR: Sitename path '/sites/$sitename' already exists, exiting."
+  exit 1
+fi
+
+if [ -r /etc/apache2/sites-available/$sitename ]; then
+  echo "ERROR: Apache2 site config '/etc/apache2/sites-available/$sitename' already exists, exiting."
+  exit 1
+fi
+
+mysql --defaults-file=/etc/mysql/debian.cnf --execute="SHOW DATABASES" | awk '{print $1}' | grep -v ^Database$ | grep $sitename >/dev/null 2>&1
+if [ $? == 0 ]; then
+  echo "ERROR: Database '$sitename' already exists in mysql, exiting."
+  exit 1
+fi
+
+egrep "^$sitename:" /etc/ftpd.passwd >/dev/null 2>&1
+if [ $? == 0 ]; then
+  echo "ERROR: FTP account '$sitename' already exists, exiting."
+  exit 1
+fi
+
+mkdir /sites/$sitename
+mkdir /sites/$sitename/www
+mkdir /sites/$sitename/tmp
+chown -R root:www-data /sites/$sitename
+chmod 0750 -R /sites/$sitename
+chmod 0770 -R /sites/$sitename/www
+chmod 0770 -R /sites/$sitename/tmp
+
+cat << EOF >> /sites/$sitename/www/index.html
+Nothing to see here
+EOF
+
+chown www-data:www-data /sites/$sitename/www/index.html
+chmod 640 /sites/$sitename/www/index.html
+
+domainescaped=`echo ${domainname} | sed 's=\.=\\.=g'`
+
+echo $domainname | egrep "^www\." > /dev/null 2>&1
+if [ $? == 1 ]; then
+  serveralias="ServerAlias www.${domainname}"
+else
+  nowwwdomainname=`echo $domainname | sed 's=^www\.=='`
+  serveralias="ServerAlias ${nowwwdomainname}"
+fi
+
+cat << EOF >> /etc/apache2/sites-available/$sitename
+<VirtualHost *:80>
+  ServerAdmin root
+  ServerName ${domainname}
+  ${serveralias}
+
+  # Uncomment lines below to rewrite ${domainescaped} to ${domainname}
+  #RewriteEngine on
+  #RewriteCond %{HTTP_HOST} !^${domainescaped}\$ [NC]
+  #RewriteRule ^(.*)$ http://${domainname}\$1 [R=301,L]
+
+  php_admin_flag engine on
+  php_admin_value session.save_path /sites/$sitename/tmp/
+  php_admin_value upload_tmp_dir /sites/$sitename/tmp/
+  php_admin_value open_basedir /sites/$sitename/
+  php_admin_value suhosin.sql.user_prefix $sitename
+
+  DocumentRoot /sites/${sitename}/www
+
+  <Directory />
+    Options None
+    AllowOverride None
+  </Directory>
+
+  <Directory /sites/${sitename}/www/>
+    Options -Indexes -MultiViews SymLinksIfOwnerMatch
+    AllowOverride All
+    Order allow,deny
+    allow from all
+  </Directory>
+
+  ErrorLog /var/log/apache2/${sitename}_error.log
+  LogLevel warn
+  CustomLog /var/log/apache2/${sitename}_access.log combined
+
+</VirtualHost>
+EOF
+
+dbpassword=`pwgen -sv 15 1`
+cat << EOF >> /tmp/$$.sql
+CREATE DATABASE $sitename DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+CREATE USER '$sitename'@'localhost' identified by '$dbpassword';
+GRANT select,insert,update,delete,create,alter,index,drop ON  \`$sitename\`.* TO '$sitename'@'localhost';
+FLUSH PRIVILEGES;
+EOF
+
+mysql --defaults-file=/etc/mysql/debian.cnf < /tmp/$$.sql
+rm -f /tmp/$$.sql
+
+ftppassword=`pwgen -sv 15 1`
+htpasswd -b /etc/ftpd.passwd $sitename "$ftppassword" >/dev/null 2>&1
+
+
+a2ensite ${sitename} > /dev/null 2>&1
+service apache2 restart
+
+cat << EOF
+
+Your site account has been created with the following details:
+
+site url: http://$domainname
+
+FTP:
+ftp type: FTPS (Explicit TLS)
+ftp host: `hostname -f`
+ftp user: $sitename
+ftp pass: $ftppassword
+
+DATABASE:
+db type: MySQL
+db host: localhost
+db user: $sitename
+db pass: $dbpassword
+db name: $sitename
+
+Please save this information for your records.
+
+EOF
+

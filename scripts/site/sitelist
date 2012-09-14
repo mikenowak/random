@@ -1,0 +1,3 @@
+#!/bin/bash
+
+/usr/bin/find /sites -maxdepth 1 -type d -name '[A-Za-z0-9]*' -printf '%f\n'
