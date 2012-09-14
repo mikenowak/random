@@ -1,0 +1,5 @@
+#
+# Goes hand in hand with vsftpd.conf
+#
+auth    required        pam_pwdfile.so  pwdfile /etc/ftpd.passwd
+account required        pam_permit.so
