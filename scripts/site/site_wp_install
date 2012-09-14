@@ -1,0 +1,54 @@
+#!/bin/bash
+
+if [ $# -lt 3 ]; then
+  echo "Usage: `basename $0` <sitename> <ftppassword> <dbpassword> [lang]"
+  exit 1
+fi
+
+if [ -d /sites/$1 ]; then
+  sitename=$1
+else
+  echo "ERROR: sitename $1 does not exist".
+  exit 1
+fi
+
+if [ -f /sites/$sitename/www/wp-config.php ]; then
+  echo "ERROR: sitename $1 is already running wordpress"
+  exit 1
+fi
+
+ftppassword=$2
+dbpassword=$3
+
+mkdir /tmp/wp-$$
+chmod 0700 /tmp/wp-$$
+
+wget --output-document=/tmp/wp-$$/latest.tar.gz http://wordpress.org/latest.tar.gz
+tar -zxpf /tmp/wp-$$/latest.tar.gz -C /tmp/wp-$$/
+
+curl --silent -o /tmp/wp-$$/wordpress/salt.txt https://api.wordpress.org/secret-key/1.1/salt/
+sed '45,52d'  /tmp/wp-$$/wordpress/wp-config-sample.php > /tmp/wp-$$/wordpress/wp-config-stripped.php
+sed "44 r /tmp/wp-$$/wordpress/salt.txt" /tmp/wp-$$/wordpress/wp-config-stripped.php > /tmp/wp-$$/wordpress/wp-config-salted.php
+cat << EOF >> /tmp/wp-$$/wordpress/ftp.txt
+
+/* FTP settings for auto update */
+define('FTP_USER', '$sitename');
+define('FTP_PASS', '$ftppassword');
+define('FTP_HOST', '`hostname -f`');
+define('FTP_SSL', true);
+
+EOF
+sed "82 r /tmp/wp-$$/wordpress/ftp.txt" /tmp/wp-$$/wordpress/wp-config-salted.php > /tmp/wp-$$/wordpress/wp-config.php
+rm /tmp/wp-$$/wordpress/salt.txt /tmp/wp-$$/wordpress/wp-config-sample.php /tmp/wp-$$/wordpress/wp-config-stripped.php /tmp/wp-$$/wordpress/ftp.txt /tmp/wp-$$/wordpress/wp-config-salted.php
+
+sed "s/database_name_here/$sitename/g" "/tmp/wp-$$/wordpress/wp-config.php" > "/tmp/wp-$$/wordpress/wp-config.php.new" && mv "/tmp/wp-$$/wordpress/wp-config.php.new" "/tmp/wp-$$/wordpress/wp-config.php"
+sed "s/username_here/$sitename/g" "/tmp/wp-$$/wordpress/wp-config.php" > "/tmp/wp-$$/wordpress/wp-config.php.new" && mv "/tmp/wp-$$/wordpress/wp-config.php.new" "/tmp/wp-$$/wordpress/wp-config.php"
+sed "s/password_here/$dbpassword/g" "/tmp/wp-$$/wordpress/wp-config.php" > "/tmp/wp-$$/wordpress/wp-config.php.new" && mv "/tmp/wp-$$/wordpress/wp-config.php.new" "/tmp/wp-$$/wordpress/wp-config.php"
+randprefix=`pwgen -sA0 3 1`
+sed "s/wp_/${randprefix}_/g" "/tmp/wp-$$/wordpress/wp-config.php" > "/tmp/wp-$$/wordpress/wp-config.php.new" && mv "/tmp/wp-$$/wordpress/wp-config.php.new" "/tmp/wp-$$/wordpress/wp-config.php"
+
+chown -R www-data:www-data /tmp/wp-$$/wordpress
+mv /tmp/wp-$$/wordpress/* /sites/$sitename/www/
+rm -fr /tmp/wp-$$
+
+echo "now visit the site url to finish installation"
