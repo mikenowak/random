@@ -1,7 +1,38 @@
 #
+# Defines
+#
+define site($domain)  {
+
+  user { $name:
+    ensure  => present,
+    gid   => 'www-data',
+    home  => "/sites/${name}",
+  }->
+  file { [ "/sites/${name}", "/sites/${name}/www",
+        "/sites/${name}/tmp", "/sites/${name}/backups" ]:
+    ensure  => 'directory',
+    owner   => $name,
+    group   => 'www-data',
+    mode    => '0770',
+  }->
+  apache::vhost { $domain:
+    port          => '80',
+    docroot       => "/sites/${name}/www",
+#    directory     => [ { path => '/sites/${name}/www',
+#                      options => ['SymLinksIfOwnerMatch'],
+#                      allowOverride => ['All'] }],
+    docroot_group => 'www-data',
+    docroot_owner => $name,
+  }
+}
+
+#
 # Ubuntu specific
 #
+
 if $::operatingsystem == 'Ubuntu' {
+
+  include concat::setup
 
   # Remove some unwanted packages
   package {[ 'whoopsie', 'landscape-common', 'ntpdate', 'tmux', 'ppp',
@@ -62,16 +93,30 @@ exit 0
   # webserver
   if $::hostname == 'discovery' {
     # install amp stack
-    #
-    # apache + php first
-    package { ['libapache2-mod-php5']:
-        ensure  => present,
+    file { '/sites':
+      ensure  => directory,
+      owner   => 'root',
+      group   => 'www-data',
+      mode    => '0750',
     }
 
-    package { ['php5-mysql', 'php5-gd', 'php5-mcrypt', 'mysql-server',
-                'libssh2-php' ]:
-      ensure  => present,
-      require => Package['libapache2-mod-php5'],
+    # apache
+    class { 'apache':
+      default_vhost   => false,
     }
+
+    apache::mod { 'rewrite': }
+
+    site { 'alpha': domain  => 'alpha.dev', }
+    site { 'beta': domain  => 'alpha.dev', }
+#    package { ['libapache2-mod-php5']:
+#        ensure  => present,
+#    }
+#
+#    package { ['php5-mysql', 'php5-gd', 'php5-mcrypt', 'mysql-server',
+#                'libssh2-php' ]:
+#      ensure  => present,
+#      require => Package['libapache2-mod-php5'],
+#    }
   }
 } # End of: Ubuntu
