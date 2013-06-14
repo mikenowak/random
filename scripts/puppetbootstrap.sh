@@ -63,11 +63,17 @@ fi
 #
 # Install some puppet modules from the forge
 #
-# nothing here yet
+cd /etc/puppet/modules
+git clone https://github.com/puppetlabs/puppetlabs-apache.git apache
+git clone https://github.com/puppetlabs/puppetlabs-stdlib.git stdlib
+git clone https://github.com/puppetlabs/puppetlabs-concat.git concat
+
+
+
 if [ ! -d /etc/puppet/manifests ]; then mkdir /etc/puppet/manifests; fi
 wget -O /etc/puppet/manifests/bootstrap.pp https://raw.github.com/mikenowak/random/master/configs/bootstrap.pp
 
 puppet apply --show_diff --verbose /etc/puppet/manifests/bootstrap.pp
 
 # reboot for a good measure
-init 6
+echo 'now you should init 6'
