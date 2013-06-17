@@ -74,7 +74,10 @@ git clone https://github.com/puppetlabs/puppetlabs-firewall.git firewall
 if [ ! -d /etc/puppet/manifests ]; then mkdir /etc/puppet/manifests; fi
 wget -O /etc/puppet/manifests/bootstrap.pp https://raw.github.com/mikenowak/random/master/configs/bootstrap.pp
 
-puppet apply --show_diff --verbose /etc/puppet/manifests/bootstrap.pp
+wget -O /etc/puppet/node.sh https://raw.github.com/mikenowak/random/master/scripts/node.sh
+chmod +x /etc/puppet/node.sh
+
+puppet apply --show_diff --verbose --node_terminus exec --external_nodes /etc/puppet/node.sh /etc/puppet/manifests/bootstrap.pp
 
 # reboot for a good measure
 echo 'now you should init 6'
