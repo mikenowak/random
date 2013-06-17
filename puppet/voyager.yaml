@@ -1,0 +1,7 @@
+---
+role: web
+sites:
+  alpha:
+    domain: alpha.dev
+  beta:
+    domain: beta.devnet

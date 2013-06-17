@@ -91,7 +91,7 @@ exit 0
   }
 
   # webserver
-  if $::hostname == 'discovery' {
+  if hiera('role') == 'web' {
     # install amp stack
     file { '/sites':
       ensure  => directory,
@@ -107,8 +107,11 @@ exit 0
 
     apache::mod { 'rewrite': }
 
-    site { 'alpha': domain  => 'alpha.dev', }
-    site { 'beta': domain  => 'alpha.dev', }
+    if hiera('sites') {
+      $sites = hiera('sites')
+      create_resources(site, $sites)
+    }
+
 #    package { ['libapache2-mod-php5']:
 #        ensure  => present,
 #    }
