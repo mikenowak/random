@@ -60,24 +60,23 @@ fi
 # COMMON LOGIC
 #
 
-#
-# Install some puppet modules from the forge
-#
+if [ ! -d /etc/puppet/manifests ]; then mkdir /etc/puppet/manifests; fi
+if [ ! -d /etc/puppet/modules ]; then mkdir /etc/puppet/modules; fi
+if [ ! -d /etc/puppet/hieradata ]; then mkdir /etc/puppet/hieradata; fi
+
+# Install some puppet modules
 cd /etc/puppet/modules
 git clone https://github.com/puppetlabs/puppetlabs-apache.git apache
 git clone https://github.com/puppetlabs/puppetlabs-stdlib.git stdlib
 git clone https://github.com/puppetlabs/puppetlabs-concat.git concat
 git clone https://github.com/puppetlabs/puppetlabs-firewall.git firewall
 
-
-
-if [ ! -d /etc/puppet/manifests ]; then mkdir /etc/puppet/manifests; fi
-if [ ! -d /etc/puppet/hieradata ]; then mkdir /etc/puppet/hieradata; fi
+# And some configs
 wget -O /etc/puppet/manifests/site.pp https://raw.github.com/mikenowak/random/master/puppet/site.pp
 wget -O /etc/puppet/hiera.yaml https://raw.github.com/mikenowak/random/master/puppet/hiera.yaml
 wget -O /etc/puppet/hieradata/$HOSTNAME.yaml https://raw.github.com/mikenowak/random/master/puppet/$HOSTNAME.yaml
 
-puppet apply --show_diff --verbose /etc/puppet/node.sh /etc/puppet/manifests/site.pp
+puppet apply --show_diff --verbose /etc/puppet/manifests/site.pp
 
 # reboot for a good measure
 echo 'now you should init 6'
