@@ -28,9 +28,11 @@ fi
 # UBUNTU LOGIC
 #
 if [ "$OPERATINGSYSTEM" == "ubuntu" ]; then
-  # install puppetlabs repo
-  wget -qO "/tmp/puppetlabs-release-${CODENAME}.deb" http://apt.puppetlabs.com/puppetlabs-release-${CODENAME}.deb
-  dpkg -i /tmp/puppetlabs-release-${CODENAME}.deb
+  # install puppetlabs repo if not installed
+  if [ -z "`dpkg-query -W --showformat='\${Status}\n' puppetlabs-release | grep 'install ok installed'`" ]; then
+    wget -qO "/tmp/puppetlabs-release-${CODENAME}.deb" http://apt.puppetlabs.com/puppetlabs-release-${CODENAME}.deb
+    dpkg -i /tmp/puppetlabs-release-${CODENAME}.deb
+  fi
 
   # make sure the system is upto date
   apt-get -qq update
@@ -38,14 +40,16 @@ if [ "$OPERATINGSYSTEM" == "ubuntu" ]; then
 
   # install puppet and git
   apt-get -y install puppet git
-
 fi
 
 #
 # REDHAT LOGIC
 #
 if [ "$OPERATINGSYSTEM" == "redhat" ]; then
-  rpm -ivh http://yum.puppetlabs.com/el/${RELEASE}/products/x86_64/puppetlabs-release-${RELEASE}-7.noarch.rpm
+  # install puppetlabs repo if not installed
+  if [ -z "`rpm -qa | grep puppetlabs-release`" ]; then
+    rpm -ivh http://yum.puppetlabs.com/el/${RELEASE}/products/x86_64/puppetlabs-release-${RELEASE}-7.noarch.rpm
+  fi
 
   # make sure the system is upto date
   yum clean all
