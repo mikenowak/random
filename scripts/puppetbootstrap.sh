@@ -72,12 +72,12 @@ git clone https://github.com/puppetlabs/puppetlabs-firewall.git firewall
 
 
 if [ ! -d /etc/puppet/manifests ]; then mkdir /etc/puppet/manifests; fi
-wget -O /etc/puppet/manifests/bootstrap.pp https://raw.github.com/mikenowak/random/master/configs/bootstrap.pp
+if [ ! -d /etc/puppet/hieradata ]; then mkdir /etc/puppet/hieradata; fi
+wget -O /etc/puppet/manifests/site.pp https://raw.github.com/mikenowak/random/master/puppet/site.pp
+wget -O /etc/puppet/hiera.yaml https://raw.github.com/mikenowak/random/master/puppet/hiera.yaml
+wget -O /etc/puppet/hieradata/$HOSTNAME.yaml https://raw.github.com/mikenowak/random/master/puppet/$HOSTNAME.yaml
 
-wget -O /etc/puppet/node.sh https://raw.github.com/mikenowak/random/master/scripts/node.sh
-chmod +x /etc/puppet/node.sh
-
-puppet apply --show_diff --verbose --node_terminus exec --external_nodes /etc/puppet/node.sh /etc/puppet/manifests/bootstrap.pp
+puppet apply --show_diff --verbose /etc/puppet/node.sh /etc/puppet/manifests/site.pp
 
 # reboot for a good measure
 echo 'now you should init 6'
