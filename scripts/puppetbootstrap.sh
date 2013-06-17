@@ -67,6 +67,7 @@ cd /etc/puppet/modules
 git clone https://github.com/puppetlabs/puppetlabs-apache.git apache
 git clone https://github.com/puppetlabs/puppetlabs-stdlib.git stdlib
 git clone https://github.com/puppetlabs/puppetlabs-concat.git concat
+git clone https://github.com/puppetlabs/puppetlabs-firewall.git firewall
 
 
 
