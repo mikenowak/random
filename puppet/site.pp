@@ -1,26 +1,34 @@
 #
 # Defines
 #
-define site($domain)  {
+define site($ensure='present',$domain)  {
+
+  if $ensure == 'present' {
+    $dir_ensure = 'directory'
+  } else {
+    $dir_ensure = 'absent'
+  }
 
   user { $name:
-    ensure  => present,
+    ensure  => $ensure,
     gid   => 'www-data',
     home  => "/sites/${name}",
+    comment => "${name}"
   }->
   file { [ "/sites/${name}", "/sites/${name}/www",
         "/sites/${name}/tmp", "/sites/${name}/backups" ]:
-    ensure  => 'directory',
+    ensure  => $dir_ensure,
     owner   => $name,
     group   => 'www-data',
     mode    => '0770',
+    force   => true,
   }->
   apache::vhost { $domain:
+    ensure        => $ensure,
     port          => '80',
     docroot       => "/sites/${name}/www",
-#    directory     => [ { path => '/sites/${name}/www',
-#                      options => ['SymLinksIfOwnerMatch'],
-#                      allowOverride => ['All'] }],
+    options 	  => ['SymLinksIfOwnerMatch', '-Indexes'],
+    override      => ['All'],
     docroot_group => 'www-data',
     docroot_owner => $name,
   }
@@ -103,6 +111,7 @@ exit 0
     # apache
     class { 'apache':
       default_vhost   => false,
+      purge_configs   => true,
     }
 
     apache::mod { 'rewrite': }
