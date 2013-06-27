@@ -11,11 +11,19 @@ define site($ensure='present',$domain)  {
 
   user { $name:
     ensure  => $ensure,
-    gid   => 'www-data',
-    home  => "/sites/${name}",
+    gid     => 'www-data',
+    home    => "/sites/${name}",
     comment => "${name}"
+    shell   => '/bin/false',
   }->
-  file { [ "/sites/${name}", "/sites/${name}/www",
+  file { "/sites/${name}",
+    ensure  => $dir_ensure,
+    owner   => 'root',
+    group   => 'www-data',
+    mode    => '0750',
+    force   => true,
+  }->
+  file { [ "/sites/${name}/www",
         "/sites/${name}/tmp", "/sites/${name}/backups" ]:
     ensure  => $dir_ensure,
     owner   => $name,
@@ -27,7 +35,7 @@ define site($ensure='present',$domain)  {
     ensure        => $ensure,
     port          => '80',
     docroot       => "/sites/${name}/www",
-    options 	  => ['SymLinksIfOwnerMatch', '-Indexes'],
+    options       => ['SymLinksIfOwnerMatch', '-Indexes'],
     override      => ['All'],
     docroot_group => 'www-data',
     docroot_owner => $name,
