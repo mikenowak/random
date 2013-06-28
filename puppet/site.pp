@@ -13,10 +13,10 @@ define site($ensure='present',$domain)  {
     ensure  => $ensure,
     gid     => 'www-data',
     home    => "/sites/${name}",
-    comment => "${name}"
+    comment => "${name}",
     shell   => '/bin/false',
   }->
-  file { "/sites/${name}",
+  file { "/sites/${name}":
     ensure  => $dir_ensure,
     owner   => 'root',
     group   => 'www-data',
