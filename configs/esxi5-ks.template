@@ -11,8 +11,41 @@ reboot
 
 %firstboot --interpreter=busybox
 
-# download lsiprovider from the repository
-wget @REPO@/LSI_bootbank_lsiprovider_500.04.V0.38-0006.vib -O /vmfs/volumes/datastore1/lsiprovider.vib
+# prepare https downloader script
+cat > /tmp/dload.py << __DLOAD_PY__
+#!/usr/bin/env python
+
+"""File downloading from the web.
+"""
+
+def download(url):
+  """Copy the contents of a file from a given URL
+  to a local file.
+  """
+  import urllib
+  webFile = urllib.urlopen(url)
+  localFile = open(url.split('/')[-1], 'w')
+  localFile.write(webFile.read())
+  webFile.close()
+  localFile.close()
+
+if __name__ == '__main__':
+  import sys
+  if len(sys.argv) == 2:
+    try:
+      download(sys.argv[1])
+    except IOError:
+      print 'Filename not found.'
+  else:
+    import os
+    print 'usage: %s http://server.com/path/to/filename' % os.path.basename(sys.argv[0])
+
+__DLOAD_PY__
+chmod +x /tmp/dload.py
+cd /tmp
+
+# download vibs
+/tmp/dload.py https://github.com/mikenowak/random/raw/master/files/LSI_bootbank_lsiprovider_500.04.V0.38-0006.vib
 
 # enable & start remote ESXi Shell  (SSH)
 vim-cmd hostsvc/enable_ssh
@@ -103,8 +136,7 @@ __NTP_CONFIG__
 esxcli system hostname set --fqdn @FQDN@
 
 ### INSTALL VIBS
-esxcli software vib install -v /vmfs/volumes/datastore1/lsiprovider.vib --no-sig-check
-rm /vmfs/volumes/datastore1/lsiprovider.vib
+esxcli software vib install -v /tmp/lsiprovider.vib --no-sig-check
 
 ### FIREWALL CONFIGURATION ###
 
