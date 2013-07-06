@@ -1,0 +1,142 @@
+#
+# ESXI 5.x install template
+# to be used with  ./scripts/esxi_make_ks.sh
+#
+
+accepteula
+install --firstdisk=local --overwritevmfs
+rootpw password
+network --bootproto=dhcp --addvmportgroup=false --device=vmnic0
+reboot
+
+%firstboot --interpreter=busybox
+
+# download lsiprovider from the repository
+wget @REPO@/LSI_bootbank_lsiprovider_500.04.V0.38-0006.vib -O /vmfs/volumes/datastore1/lsiprovider.vib
+
+# enable & start remote ESXi Shell  (SSH)
+vim-cmd hostsvc/enable_ssh
+vim-cmd hostsvc/start_ssh
+
+# enable & start local ESXi Shell (TSM)
+vim-cmd hostsvc/enable_esx_shell
+vim-cmd hostsvc/start_esx_shell
+
+# supress ESXi Shell shell warning
+esxcli system settings advanced set -o /UserVars/SuppressShellWarning -i 1
+
+# ESXi Shell interactive idle time logout
+esxcli system settings advanced set -o /UserVars/ESXiShellInteractiveTimeOut -i 3600
+
+# Block VM guest BPDU packets, global configuration
+esxcli system settings advanced set -o /Net/BlockGuestBPDU -i 1
+
+###########################
+## vSwitch configuration ##
+###########################
+
+#Delete Management Network vmk0 created by the installer
+esxcli network ip interface remove --interface-name vmk0
+#Delete vSwitch0 created by the installer
+esxcli network vswitch standard remove --vswitch-name vSwitch0
+
+## vSwitch0
+
+# add vSwitch0
+esxcli network vswitch standard add --ports 128 --vswitch-name vSwitch0
+
+# attach vmnic0 to vSwitch0
+esxcli network vswitch standard uplink add --uplink-name vmnic0 --vswitch-name vSwitch0
+
+# configure vlans
+esxcli network vswitch standard portgroup add --portgroup-name ESX --vswitch-name vSwitch0
+esxcli network vswitch standard portgroup set --portgroup-name ESX --vlan-id 379
+esxcli network vswitch standard portgroup add --portgroup-name NAS --vswitch-name vSwitch0
+esxcli network vswitch standard portgroup set --portgroup-name NAS --vlan-id 627
+
+# disable cdp
+esxcli network vswitch standard set --cdp-status down --vswitch-name vSwitch0
+
+# security configuration
+esxcli network vswitch standard policy security set --allow-forged-transmits no --allow-mac-change no --allow-promiscuous no --vswitch-name vSwitch0
+
+## vSwitch1
+
+# add vSwitch1
+esxcli network vswitch standard add --ports 128 --vswitch-name vSwitch1
+
+# attach vmnic2 to vSwitch0
+esxcli network vswitch standard uplink add --uplink-name vmnic2 --vswitch-name vSwitch1
+
+# configure mtu & disable cdp
+esxcli network vswitch standard set --mtu 9000 --cdp-status down --vswitch-name vSwitch1
+
+# configure vlans
+esxcli network vswitch standard portgroup add --portgroup-name DMZ --vswitch-name vSwitch1
+esxcli network vswitch standard portgroup set --portgroup-name DMZ --vlan-id 100
+
+# security configuration
+esxcli network vswitch standard policy security set --allow-forged-transmits no --allow-mac-change no --allow-promiscuous no --vswitch-name vSwitch1
+
+# Configure VMkernel traffic type Management
+esxcli network ip interface add --interface-name vmk0 --portgroup-name ESX 
+esxcli network ip interface ipv4 set --interface-name vmk0 --ipv4 @IP@ --netmask @NETMASK@ --type static
+esxcli network ip interface tag add -i vmk0 -t Management
+
+# Configure VMkernel routes
+esxcli network ip route ipv4 add -n default -g @GATEWAY@
+
+# Disable IPv6 for VMkernel interfaces
+esxcli system module parameters set -m tcpip3 -p ipv6=0
+
+### NTP CONFIGURATIONS ###
+cat > /etc/ntp.conf << __NTP_CONFIG__
+restrict default kod nomodify notrap noquery nopeer
+restrict 127.0.0.1
+server 65.55.21.13
+server 153.19.250.123
+driftfile /etc/ntp.drift
+__NTP_CONFIG__
+/sbin/chkconfig ntpd on
+
+# set hosntmae
+esxcli system hostname set --fqdn @FQDN@
+
+### INSTALL VIBS
+esxcli software vib install -v /vmfs/volumes/datastore1/lsiprovider.vib --no-sig-check
+rm /vmfs/volumes/datastore1/lsiprovider.vib
+
+### FIREWALL CONFIGURATION ###
+
+# enable firewall
+esxcli network firewall set --default-action false --enabled yes
+
+FIREWALL_DISABLE_SERVICES="dhcp dns DHCPv6 WOL snmp"
+for SERVICE in ${FIREWALL_DISABLE_SERVICES}
+do
+ esxcli network firewall ruleset set --ruleset-id ${SERVICE} --enabled no
+done
+
+# services to enable by default
+FIREWALL_ENABLE_SERVICES="sshServer ntpClient"
+for SERVICE in ${FIREWALL_ENABLE_SERVICES}
+do
+ esxcli network firewall ruleset set --ruleset-id ${SERVICE} --enabled yes
+done
+
+# make ISOs and RDMs directories on the datastore1
+mkdir /vmfs/volumes/datastore1/ISOS
+mkdir /vmfs/volumes/datastore1/RDMs
+
+# backup ESXi configuration to persist changes
+/sbin/auto-backup.sh
+
+# enter maintenance mode
+esxcli system maintenanceMode set -e true
+
+# copy %first boot script logs to persisted datastore
+cp /var/log/hostd.log "/vmfs/volumes/datastore1/firstboot-hostd.log"
+cp /var/log/esxi_install.log "/vmfs/volumes/datastore1/firstboot-esxi_install.log"
+
+# Needed for configuration changes that could not be performed in esxcli
+esxcli system shutdown reboot -d 60 -r "rebooting after host configurations"
