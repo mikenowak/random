@@ -68,8 +68,8 @@ esxcli network vswitch standard add --ports 128 --vswitch-name vSwitch1
 # attach vmnic2 to vSwitch0
 esxcli network vswitch standard uplink add --uplink-name vmnic2 --vswitch-name vSwitch1
 
-# configure mtu & disable cdp
-esxcli network vswitch standard set --mtu 9000 --cdp-status down --vswitch-name vSwitch1
+# disable cdp
+esxcli network vswitch standard set --cdp-status down --vswitch-name vSwitch1
 
 # configure vlans
 esxcli network vswitch standard portgroup add --portgroup-name DMZ --vswitch-name vSwitch1
