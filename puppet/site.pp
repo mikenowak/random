@@ -42,6 +42,7 @@ define site($ensure='present',$domain, $password, $dbpassword)  {
     docroot_owner => $name,
   }->
   mysql::db { $name:
+    ensure   => $ensure,
     user     => $name,
     password => $dbpassword,
     host     => 'localhost',
@@ -122,9 +123,11 @@ exit 0
       group   => 'www-data',
       mode    => '0750',
     }
+
     # apache
     class { 'apache':
       default_vhost     => false,
+      default_mods      => false,
       purge_configs     => true,
       mpm_module        => 'prefork',
       server_tokens     => 'Prod',
@@ -136,6 +139,9 @@ exit 0
     class { '::mysql::server':
       remove_default_accounts   => true,
       require                   => Class['apache'],
+    }->
+    package { 'automysqlbackup':
+      ensure    => present,
     }
 
     # php
