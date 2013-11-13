@@ -3,5 +3,9 @@ role: web
 sites:
   alpha:
     domain: alpha.dev
+    password: foo
+    dbpassword: bar
   beta:
     domain: beta.devnet
+    password: baz
+    dbpassword: qaz
