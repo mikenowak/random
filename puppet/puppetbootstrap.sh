@@ -37,6 +37,7 @@ if [ "$OPERATINGSYSTEM" == "ubuntu" ]; then
   # make sure the system is upto date
   apt-get -qq update
   apt-get -y dist-upgrade
+  apt-get autoremove
 
   # install puppet and git
   apt-get -y install puppet git
@@ -69,11 +70,11 @@ if [ ! -d /etc/puppet/modules ]; then mkdir /etc/puppet/modules; fi
 if [ ! -d /etc/puppet/hieradata ]; then mkdir /etc/puppet/hieradata; fi
 
 # Install some puppet modules
-cd /etc/puppet/modules
-git clone https://github.com/puppetlabs/puppetlabs-apache.git apache
-git clone https://github.com/puppetlabs/puppetlabs-stdlib.git stdlib
-git clone https://github.com/puppetlabs/puppetlabs-concat.git concat
-git clone https://github.com/puppetlabs/puppetlabs-firewall.git firewall
+puppet module install puppetlabs-firewall
+puppet module install puppetlabs-stdlib
+puppet module install puppetlabs-concat
+puppet module install puppetlabs-apache
+puppet module install puppetlabs-mysql
 
 # And some configs
 wget -O /etc/puppet/manifests/site.pp https://raw.github.com/mikenowak/random/master/puppet/site.pp

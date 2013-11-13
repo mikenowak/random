@@ -1,7 +1,7 @@
 #
 # Defines
 #
-define site($ensure='present',$domain)  {
+define site($ensure='present',$domain, $password, $dbpassword)  {
 
   if $ensure == 'present' {
     $dir_ensure = 'directory'
@@ -10,11 +10,12 @@ define site($ensure='present',$domain)  {
   }
 
   user { $name:
-    ensure  => $ensure,
-    gid     => 'www-data',
-    home    => "/sites/${name}",
-    comment => "${name}",
-    shell   => '/bin/false',
+    ensure   => $ensure,
+    gid      => 'www-data',
+    home     => "/sites/${name}",
+    comment  => "${name}",
+    shell    => '/bin/false',
+    password => md5($password)
   }->
   file { "/sites/${name}":
     ensure  => $dir_ensure,
@@ -39,6 +40,12 @@ define site($ensure='present',$domain)  {
     override      => ['All'],
     docroot_group => 'www-data',
     docroot_owner => $name,
+  }->
+  mysql::db { $name:
+    user     => $name,
+    password => $dbpassword,
+    host     => 'localhost',
+    grant    => ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'ALTER', 'INDEX', 'DROP'],
   }
 }
 
@@ -108,22 +115,30 @@ exit 0
 
   # webserver
   if hiera('role') == 'web' {
-    # install amp stack
+  # webserver
+  if hiera('role') == 'web' {
+    # sites directory
     file { '/sites':
       ensure  => directory,
       owner   => 'root',
       group   => 'www-data',
       mode    => '0750',
     }
-
     # apache
     class { 'apache':
       default_vhost   => false,
       purge_configs   => true,
     }
+    apache::mod { 'rewrite':
+    }
+    # mysql
+    class { '::mysql::server':
+      root_password             => 'changeme',
+      remove_default_accounts   => true,
+      requires                  => Class['apache'],
+    }
 
-    apache::mod { 'rewrite': }
-
+    # create hosted accounts
     if hiera('sites') {
       $sites = hiera('sites')
       create_resources(site, $sites)
