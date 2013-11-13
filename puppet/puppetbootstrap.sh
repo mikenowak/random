@@ -82,7 +82,7 @@ puppet module install puppetlabs-mysql
 wget -O /etc/puppet/manifests/site.pp https://raw.github.com/mikenowak/random/master/puppet/site.pp
 wget -O /etc/puppet/hiera.yaml https://raw.github.com/mikenowak/random/master/puppet/hiera.yaml
 wget -O /usr/local/bin/siteadm https://raw.github.com/mikenowak/random/master/puppet/siteadm && chmod +x /usr/local/bin/siteadm
-wget -O /etc/puppet/hieradata/$HOSTNAME.yaml https://raw.github.com/mikenowak/random/master/puppet/$HOSTNAME.yaml
+wget -O /etc/puppet/hieradata/$HOSTNAME.yaml https://raw.github.com/mikenowak/random/master/puppet/$HOSTNAME.yaml && chmod 0600 /etc/puppet/hieradata/$HOSTNAME.yaml
 
 puppet apply --show_diff --verbose /etc/puppet/manifests/site.pp
 

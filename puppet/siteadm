@@ -19,7 +19,7 @@ fi
 dbpassword=`pwgen -sv 15 1`
 password=`pwgen -sv 15 1`
 
-cat << EOF >> /etc/puppet/hieradata/voyager.yaml
+cat << EOF >> /etc/puppet/hieradata/$HOSTNAME.yaml
   ${name}:
     ensure: present
     domain: ${domain}
