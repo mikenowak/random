@@ -115,8 +115,6 @@ exit 0
 
   # webserver
   if hiera('role') == 'web' {
-  # webserver
-  if hiera('role') == 'web' {
     # sites directory
     file { '/sites':
       ensure  => directory,
@@ -126,16 +124,25 @@ exit 0
     }
     # apache
     class { 'apache':
-      default_vhost   => false,
-      purge_configs   => true,
+      default_vhost     => false,
+      purge_configs     => true,
+      mpm_module        => 'prefork',
+      server_tokens     => 'Prod',
+      server_signature  => 'Off',
     }
-    apache::mod { 'rewrite':
-    }
+    # apache modules
+    apache::mod { 'rewrite': }
     # mysql
     class { '::mysql::server':
-      root_password             => 'changeme',
       remove_default_accounts   => true,
-      requires                  => Class['apache'],
+      require                   => Class['apache'],
+    }
+
+    # php
+    apache::mod { 'php5':
+    }->
+    package { ['php5-mysql', 'php5-gd', 'php5-mcrypt', 'libssh2-php' ]:
+      ensure  => present,
     }
 
     # create hosted accounts
@@ -143,15 +150,5 @@ exit 0
       $sites = hiera('sites')
       create_resources(site, $sites)
     }
-
-#    package { ['libapache2-mod-php5']:
-#        ensure  => present,
-#    }
-#
-#    package { ['php5-mysql', 'php5-gd', 'php5-mcrypt', 'mysql-server',
-#                'libssh2-php' ]:
-#      ensure  => present,
-#      require => Package['libapache2-mod-php5'],
-#    }
   }
 } # End of: Ubuntu
