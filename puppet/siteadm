@@ -1,0 +1,52 @@
+#!/bin/bash
+
+echo -n "Enter the name of site to be created: "
+read name
+
+echo -n "Enter the name of domain for site to be created: "
+read domain
+
+if [ -z "$name" ]; then
+  echo "ERROR: Site name is required, exiting."
+  exit 1
+fi
+
+if [ -z "$domain" ]; then
+  echo "ERROR: Domain name is required, exiting."
+  exit 1
+fi
+
+dbpassword=`pwgen -sv 15 1`
+password=`pwgen -sv 15 1`
+
+cat << EOF >> /etc/puppet/hieradata/voyager.yaml
+  ${name}:
+    ensure: present
+    domain: ${domain}
+    password: ${password}
+    dbpassword: ${dbpassword}
+EOF
+
+puppet apply /etc/puppet/manifests/site.pp
+
+cat << EOF
+
+Your site account has been created with the following details:
+
+site url: http://$domain
+
+FTP:
+ftp type: SFTP
+ftp host: `hostname -f`
+ftp user: $ename
+ftp pass: $password
+
+DATABASE:
+db type: MySQL
+db host: localhost
+db user: $name
+db pass: $dbpassword
+db name: $name
+
+Please save this information for your records.
+EOF
