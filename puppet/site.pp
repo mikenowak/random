@@ -134,7 +134,9 @@ exit 0
       server_signature  => 'Off',
     }
     # apache modules
-    apache::mod { 'rewrite': }
+    class { 'apache::mod::rewrite': }
+    class { 'apache::mod::mime': }
+
     # mysql
     class { '::mysql::server':
       remove_default_accounts   => true,
