@@ -33,13 +33,16 @@ define site($ensure='present',$domain, $password, $dbpassword)  {
     force   => true,
   }->
   apache::vhost { $domain:
-    ensure        => $ensure,
-    port          => '80',
-    docroot       => "/sites/${name}/www",
-    options       => ['SymLinksIfOwnerMatch', '-Indexes'],
-    override      => ['All'],
-    docroot_group => 'www-data',
-    docroot_owner => $name,
+    ensure            => $ensure,
+    port              => '80',
+    docroot           => "/sites/${name}/www",
+    options           => ['SymLinksIfOwnerMatch', '-Indexes'],
+    override          => ['All'],
+    docroot_group     => 'www-data',
+    docroot_owner     => $name,
+    suphp_addhandler  => 'x-httpd-php',
+    suphp_engine      => 'on',
+    suphp_configpath  => '/etc/php5/apache2',
   }->
   mysql::db { $name:
     ensure   => $ensure,
