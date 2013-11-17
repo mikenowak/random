@@ -1,7 +1,7 @@
 #
 # Defines
 #
-define site($ensure='present',$domain, $password, $dbpassword)  {
+define site($ensure='present', $domain, $domainalias='', $password, $dbpassword)  {
 
   if $ensure == 'present' {
     $dir_ensure = 'directory'
@@ -36,6 +36,7 @@ define site($ensure='present',$domain, $password, $dbpassword)  {
     ensure            => $ensure,
     port              => '80',
     docroot           => "/sites/${name}/www",
+    serveraliases     => $domainalias,
     options           => ['SymLinksIfOwnerMatch', '-Indexes'],
     override          => ['All'],
     docroot_group     => 'www-data',
