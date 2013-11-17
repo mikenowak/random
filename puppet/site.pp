@@ -145,7 +145,7 @@ exit 0
     }
 
     # php
-    apache::mod { 'suphp':
+    class { 'apache::mod::suphp':
     }->
     package { ['php5-mysql', 'php5-gd', 'php5-mcrypt', 'libssh2-php' ]:
       ensure  => present,
