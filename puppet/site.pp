@@ -1,7 +1,7 @@
 #
 # Defines
 #
-define site($ensure='present', $domain, $domainalias='', $password, $dbpassword)  {
+define site($ensure='present', $domain, $domainalias='', $password, $dbpassword) {
 
   if $ensure == 'present' {
     $dir_ensure = 'directory'
@@ -15,7 +15,7 @@ define site($ensure='present', $domain, $domainalias='', $password, $dbpassword)
     home     => "/sites/${name}",
     comment  => "${name}",
     shell    => '/bin/false',
-    password => md5($password)
+    password => $password,
   }->
   file { "/sites/${name}":
     ensure  => $dir_ensure,
