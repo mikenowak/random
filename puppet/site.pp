@@ -101,7 +101,7 @@ if $::operatingsystem == 'Ubuntu' {
   }
 
   # Enable some process privacy
-  $rc_local_contents = '#!/bin/sh -e
+  $rc_local_content = '#!/bin/sh -e
 #
 # rc.local
 #
@@ -112,7 +112,7 @@ mount -o remount,hidepid=2 /proc
 exit 0
 '
   file { '/etc/rc.local':
-    content => $rc_local_contents,
+    content => $rc_local_content,
     owner => root,
     group => root,
     mode  => '0700',
@@ -150,7 +150,7 @@ exit 0
     }
 
     # php
-    $suphp_conf_contents = '
+    $suphp_conf_content = '
 [global]
 logfile=/var/log/suphp/suphp.log
 loglevel=info
@@ -169,12 +169,12 @@ min_gid=33
 [handlers]
 application/x-httpd-suphp="php:/usr/bin/php-cgi"
 x-suphp-cgi="execute:!self"
-'  
+'
 
     class { 'apache::mod::suphp':
     }->
     file { '/etc/suphp/suphp.conf':
-        content => $suphp_conf_contents,
+        content => $suphp_conf_content,
         owner   => root,
         group   => root,
         mode    => '0644',
@@ -182,6 +182,57 @@ x-suphp-cgi="execute:!self"
     }->
     package { ['php5-mysql', 'php5-gd', 'php5-mcrypt', 'libssh2-php' ]:
       ensure  => present,
+    }
+
+    # ssh sftp
+    $sshd_config_content = '
+Port 22
+Protocol 2
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_dsa_key
+HostKey /etc/ssh/ssh_host_ecdsa_key
+UsePrivilegeSeparation yes
+KeyRegenerationInterval 3600
+ServerKeyBits 768
+SyslogFacility AUTH
+LogLevel INFO
+LoginGraceTime 120
+PermitRootLogin no
+StrictModes yes
+RSAAuthentication no
+PubkeyAuthentication yes
+IgnoreRhosts yes
+RhostsRSAAuthentication no
+HostbasedAuthentication no
+PermitEmptyPasswords no
+PasswordAuthentication yes
+ChallengeResponseAuthentication no
+X11Forwarding no
+GatewayPorts no
+AllowTcpForwarding no
+PrintMotd no
+PrintLastLog yes
+TCPKeepAlive yes
+AcceptEnv LANG LC_*
+Subsystem sftp internal-sftp
+UsePAM yes
+AllowGroups www-data sysadmin
+# sftp only users www-data group
+Match group www-data
+  ChrootDirectory %h
+  ForceCommand internal-sftp
+  PasswordAuthentication yes
+'
+    file { '/etc/ssh/sshd_config':
+      ensure  => present,
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0400',
+      content => $sshd_config_content,
+      notify  => Service['ssh'],
+    }
+    service { 'ssh':
+      ensure  => running,
     }
 
     # create hosted accounts
