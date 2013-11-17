@@ -130,7 +130,6 @@ exit 0
       default_vhost     => false,
       default_mods      => false,
       purge_configs     => true,
-      mpm_module        => 'prefork',
       server_tokens     => 'Prod',
       server_signature  => 'Off',
     }
@@ -146,7 +145,7 @@ exit 0
     }
 
     # php
-    apache::mod { 'php5':
+    apache::mod { 'suphp':
     }->
     package { ['php5-mysql', 'php5-gd', 'php5-mcrypt', 'libssh2-php' ]:
       ensure  => present,
