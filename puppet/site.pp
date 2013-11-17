@@ -140,6 +140,7 @@ exit 0
     # apache modules
     class { 'apache::mod::rewrite': }
     class { 'apache::mod::mime': }
+    class { 'apache::mod::dir': }
 
     # mysql
     class { '::mysql::server':
