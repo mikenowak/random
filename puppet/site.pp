@@ -46,7 +46,8 @@ define site($ensure='present',$domain, $password, $dbpassword)  {
     user     => $name,
     password => $dbpassword,
     host     => 'localhost',
-    grant    => ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'ALTER', 'INDEX', 'DROP'],
+    grant    => ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'ALTER',
+                 'INDEX', 'DROP', 'LOCK TABLES'],
   }
 }
 
