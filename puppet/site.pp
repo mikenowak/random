@@ -147,7 +147,35 @@ exit 0
     }
 
     # php
+    $suphp_conf_contents = '
+[global]
+logfile=/var/log/suphp/suphp.log
+loglevel=info
+webserver_user=www-data
+docroot=/var/www:${HOME}/www
+allow_file_group_writeable=false
+allow_file_others_writeable=false
+allow_directory_group_writeable=false
+allow_directory_others_writeable=false
+check_vhost_docroot=true
+errors_to_browser=false
+env_path=/bin:/usr/bin
+umask=0077
+min_uid=1000
+min_gid=33
+[handlers]
+application/x-httpd-suphp="php:/usr/bin/php-cgi"
+x-suphp-cgi="execute:!self"
+'  
+
     class { 'apache::mod::suphp':
+    }->
+    file { '/etc/suphp/suphp.conf':
+        content => $suphp_conf_contents,
+        owner   => root,
+        group   => root,
+        mode    => '0644',
+        notify  => Service['httpd'],
     }->
     package { ['php5-mysql', 'php5-gd', 'php5-mcrypt', 'libssh2-php' ]:
       ensure  => present,
