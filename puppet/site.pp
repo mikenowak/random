@@ -29,7 +29,7 @@ define site($ensure='present',$domain, $password, $dbpassword)  {
     ensure  => $dir_ensure,
     owner   => $name,
     group   => 'www-data',
-    mode    => '0770',
+    mode    => '0750',
     force   => true,
   }->
   apache::vhost { $domain:
