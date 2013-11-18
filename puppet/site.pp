@@ -141,6 +141,9 @@ exit 0
     class { 'apache::mod::rewrite': }
     class { 'apache::mod::mime': }
     class { 'apache::mod::dir': }
+    apache::mod { 'auth_basic': }
+    apache::mod { 'authn_file': }
+    apache::mod { 'authz_user': }
 
     # mysql
     class { '::mysql::server':
