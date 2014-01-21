@@ -228,7 +228,6 @@ TCPKeepAlive yes
 AcceptEnv LANG LC_*
 Subsystem sftp internal-sftp
 UsePAM yes
-AllowGroups www-data sysadmin
 # sftp only users www-data group
 Match group www-data
   ChrootDirectory %h
