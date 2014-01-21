@@ -65,10 +65,17 @@ if $::operatingsystem == 'Ubuntu' {
 
   # Remove some unwanted packages
   package {[ 'whoopsie', 'landscape-common', 'ntpdate', 'tmux', 'ppp',
-            'isc-dhcp-common', 'apport', 'pppconfig', 'pppoeconf',
-            'wpasupplicant', 'byobu', 'popularity-contest',
-            'netcat-openbsd', 'wireless-tools', 'nano' ]:
+            'apport', 'pppconfig', 'pppoeconf', 'wpasupplicant',
+            'byobu', 'popularity-contest', 'netcat-openbsd',
+            'wireless-tools', 'nano' ]:
     ensure  => purged,
+  }
+
+  # on non EC2 based hosts also remove these packages
+  if virtual != 'xenu' {
+    package {[ 'isc-dhcp-common' ]:
+      ensure  => purged,
+    }
   }
 
   # Install some usefull tools
