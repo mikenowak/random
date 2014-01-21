@@ -175,7 +175,7 @@ allow_directory_others_writeable=false
 check_vhost_docroot=true
 errors_to_browser=false
 env_path=/bin:/usr/bin
-umask=0077
+umask=0027
 min_uid=1000
 min_gid=33
 [handlers]
