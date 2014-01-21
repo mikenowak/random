@@ -72,7 +72,7 @@ if $::operatingsystem == 'Ubuntu' {
   }
 
   # on non EC2 based hosts also remove these packages
-  if virtual != 'xenu' {
+  if $::virtual != 'xen' {
     package {[ 'isc-dhcp-common' ]:
       ensure  => purged,
     }
