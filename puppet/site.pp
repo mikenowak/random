@@ -138,7 +138,7 @@ exit 0
 
     # apache
     class { 'apache':
-      default_vhost     => false,
+      default_vhost     => true,
       default_mods      => false,
       purge_configs     => true,
       server_tokens     => 'Prod',
