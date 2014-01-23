@@ -1,12 +1,18 @@
 #
 # Defines
 #
-define site($ensure='present', $domain, $domainalias='', $password, $dbpassword) {
+define site($ensure='present', $domain, $domainalias='', $dirindex='false', $password, $dbpassword) {
 
   if $ensure == 'present' {
     $dir_ensure = 'directory'
   } else {
     $dir_ensure = 'absent'
+  }
+
+  if $dirindex == true {
+   $indexes = '+Indexes'
+  } else {
+   $indexes = '-Indexes'
   }
 
   user { $name:
@@ -23,6 +29,7 @@ define site($ensure='present', $domain, $domainalias='', $password, $dbpassword)
     group   => 'www-data',
     mode    => '0750',
     force   => true,
+    backup  => false,
   }->
   file { [ "/sites/${name}/www",
         "/sites/${name}/tmp", "/sites/${name}/backups" ]:
@@ -31,13 +38,14 @@ define site($ensure='present', $domain, $domainalias='', $password, $dbpassword)
     group   => 'www-data',
     mode    => '0750',
     force   => true,
+    backup  => false,
   }->
   apache::vhost { $domain:
     ensure            => $ensure,
     port              => '80',
     docroot           => "/sites/${name}/www",
     serveraliases     => $domainalias,
-    options           => ['SymLinksIfOwnerMatch', '-Indexes'],
+    options           => ['SymLinksIfOwnerMatch', $indexes ],
     override          => ['All'],
     docroot_group     => 'www-data',
     docroot_owner     => $name,
