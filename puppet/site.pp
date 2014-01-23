@@ -156,6 +156,7 @@ exit 0
     class { 'apache::mod::rewrite': }
     class { 'apache::mod::mime': }
     class { 'apache::mod::dir': }
+    class { 'apache::mod::autoindex': }
     apache::mod { 'auth_basic': }
     apache::mod { 'authn_file': }
     apache::mod { 'authz_user': }
