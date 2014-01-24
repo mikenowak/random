@@ -75,7 +75,8 @@ if $::operatingsystem == 'Ubuntu' {
   package {[ 'whoopsie', 'landscape-common', 'ntpdate', 'tmux', 'ppp',
             'apport', 'pppconfig', 'pppoeconf', 'wpasupplicant',
             'byobu', 'popularity-contest', 'netcat-openbsd',
-            'wireless-tools', 'nano' ]:
+            'wireless-tools', 'nano', 'command-not-found',
+            'command-not-found-data' ]:
     ensure  => purged,
   }
 
