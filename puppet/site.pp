@@ -135,9 +135,10 @@ exit 0
     mode  => '0700',
   }
 
+  $myfqdn = hiera('fqdn', $::fqdn)
   class { 'postfix':
     inet_interfaces => 'loopback-only',
-    myorigin => $::hostname,
+    myorigin => $myfqdn,
   }
 
   # webserver
