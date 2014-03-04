@@ -74,6 +74,7 @@ cd /etc/puppet/modules
 puppet module install puppetlabs-firewall
 puppet module install puppetlabs-stdlib
 puppet module install puppetlabs-concat
+puppet module install leinaddm-htpasswd
 #puppet module install puppetlabs-apache
 git clone https://github.com/puppetlabs/puppetlabs-apache.git apache
 puppet module install puppetlabs-mysql
