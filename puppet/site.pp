@@ -1,7 +1,7 @@
 #
 # Defines
 #
-define site($ensure='present', $domain, $domainalias='', $dirindex='false', $password, $dbpassword, $dbs='') {
+define site($ensure='present', $domain, $domainalias='', $dirindex='false', $password, $dbpassword, $dbs='', $webuser=$name, $webpassword='') {
 
   if $ensure == 'present' {
     $dir_ensure = 'directory'
@@ -39,19 +39,61 @@ define site($ensure='present', $domain, $domainalias='', $dirindex='false', $pas
     mode    => '0750',
     force   => true,
     backup  => false,
-  }->
-  apache::vhost { $domain:
-    ensure            => $ensure,
-    port              => '80',
-    docroot           => "/sites/${name}/www",
-    serveraliases     => $domainalias,
-    options           => ['SymLinksIfOwnerMatch', $indexes],
-    override          => ['All'],
-    docroot_group     => 'www-data',
-    docroot_owner     => $name,
-    suphp_addhandler  => 'x-httpd-php',
-    suphp_engine      => 'on',
-    suphp_configpath  => '/etc/php5/apache2',
+  }
+
+  if $webpassword {
+
+    file { "/sites/${name}/.htpasswd":
+      ensure  => present,
+      owner   => $name,
+      group   => 'www-data',
+      mode    => '0640',
+      backup  => false,
+      replace => false,
+    }->
+    htpasswd { $webuser:
+      cryptpasswd => ht_sha1($webpassword),
+      target      => "/sites/${name}/.htpasswd",
+    }->
+    apache::vhost { $domain:
+      ensure            => $ensure,
+      port              => '80',
+      docroot           => "/sites/${name}/www",
+      serveraliases     => $domainalias,
+      docroot_group     => 'www-data',
+      docroot_owner     => $name,
+      suphp_addhandler  => 'x-httpd-php',
+      suphp_engine      => 'on',
+      suphp_configpath  => '/etc/php5/apache2',
+      directories       => [
+        { path            => "/sites/${name}/www",
+          allow_override  => ['All'],
+          options         => ['SymLinksIfOwnerMatch', $indexes],
+          auth_name       => $domain,
+          auth_type       => 'Basic',
+          auth_require    => 'valid-user',
+          auth_user_file  => "/sites/${name}/.htpasswd",
+        },
+      ],
+    }
+  } else {
+    apache::vhost { $domain:
+      ensure            => $ensure,
+      port              => '80',
+      docroot           => "/sites/${name}/www",
+      serveraliases     => $domainalias,
+      docroot_group     => 'www-data',
+      docroot_owner     => $name,
+      suphp_addhandler  => 'x-httpd-php',
+      suphp_engine      => 'on',
+      suphp_configpath  => '/etc/php5/apache2',
+      directories       => [
+        { path            => "/sites/${name}/www",
+          allow_override  => ['All'],
+          options         => ['SymLinksIfOwnerMatch', $indexes],
+        },
+      ],
+    }
   }
 
   if is_array($dbs) {
