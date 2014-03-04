@@ -1,7 +1,7 @@
 #
 # Defines
 #
-define site($ensure='present', $domain, $domainalias='', $dirindex='false', $password, $dbpassword) {
+define site($ensure='present', $domain, $domainalias='', $dirindex='false', $password, $dbpassword, $dbs='') {
 
   if $ensure == 'present' {
     $dir_ensure = 'directory'
@@ -52,14 +52,29 @@ define site($ensure='present', $domain, $domainalias='', $dirindex='false', $pas
     suphp_addhandler  => 'x-httpd-php',
     suphp_engine      => 'on',
     suphp_configpath  => '/etc/php5/apache2',
-  }->
-  mysql::db { $name:
-    ensure   => $ensure,
-    user     => $name,
-    password => $dbpassword,
-    host     => 'localhost',
-    grant    => ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'ALTER',
+  }
+
+  if is_array($dbs) {
+    each($dbs) |$db| {
+      mysql::db { "${name}_${db}":
+        ensure   => $ensure,
+        user     => $name,
+        password => $dbpassword,
+        host     => 'localhost',
+        grant    => ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'ALTER',
+                     'INDEX', 'DROP', 'LOCK TABLES'],
+      }
+    }
+  } else {
+    mysql::db { $name:
+      ensure   => $ensure,
+      user     => $name,
+      password => $dbpassword,
+      host     => 'localhost',
+      grant    => ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'ALTER',
                  'INDEX', 'DROP', 'LOCK TABLES'],
+    }
+
   }
 }
 
