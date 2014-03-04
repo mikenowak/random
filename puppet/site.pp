@@ -212,8 +212,10 @@ x-suphp-cgi="execute:!self"
     }
 
     # ssh sftp
+    $sshd_port = hiera('sshd_port', 22)
     $sshd_config_content = "
-Port 22
+AddressFamily inet
+Port $sshd_port
 Protocol 2
 HostKey /etc/ssh/ssh_host_rsa_key
 HostKey /etc/ssh/ssh_host_dsa_key
@@ -232,11 +234,11 @@ IgnoreRhosts yes
 RhostsRSAAuthentication no
 HostbasedAuthentication no
 PermitEmptyPasswords no
-PasswordAuthentication yes
+PasswordAuthentication no
 ChallengeResponseAuthentication no
 X11Forwarding no
 GatewayPorts no
-AllowTcpForwarding no
+AllowTcpForwarding yes
 PrintMotd no
 PrintLastLog yes
 TCPKeepAlive yes
