@@ -45,7 +45,7 @@ define site($ensure='present', $domain, $domainalias='', $dirindex='false', $pas
     port              => '80',
     docroot           => "/sites/${name}/www",
     serveraliases     => $domainalias,
-    options           => ['SymLinksIfOwnerMatch', $indexes ],
+    options           => ['SymLinksIfOwnerMatch', $indexes],
     override          => ['All'],
     docroot_group     => 'www-data',
     docroot_owner     => $name,
@@ -135,6 +135,11 @@ exit 0
     mode  => '0700',
   }
 
+  class { 'postfix':
+    inet_interfaces => 'loopback-only',
+    myorigin => $::hostname,
+  }
+
   # webserver
   if hiera('role') == 'web' {
     # sites directory
@@ -207,7 +212,7 @@ x-suphp-cgi="execute:!self"
     }
 
     # ssh sftp
-    $sshd_config_content = '
+    $sshd_config_content = "
 Port 22
 Protocol 2
 HostKey /etc/ssh/ssh_host_rsa_key
@@ -243,7 +248,7 @@ Match group www-data
   ChrootDirectory %h
   ForceCommand internal-sftp
   PasswordAuthentication yes
-'
+"
     file { '/etc/ssh/sshd_config':
       ensure  => present,
       owner   => 'root',
