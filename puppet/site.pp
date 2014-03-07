@@ -1,7 +1,7 @@
 #
 # Defines
 #
-define site($ensure='present', $domain, $domainalias='', $dirindex='false', $password, $dbpassword, $dbs='', $webuser=$name, $webpassword='') {
+define site($ensure='present', $domain, $domainalias='', $dirindex='false', $password, $dbpassword='', $dbs='', $webuser=$name, $webpassword='') {
 
   if $ensure == 'present' {
     $dir_ensure = 'directory'
@@ -96,27 +96,28 @@ define site($ensure='present', $domain, $domainalias='', $dirindex='false', $pas
     }
   }
 
-  if is_array($dbs) {
-    each($dbs) |$db| {
-      mysql::db { "${name}_${db}":
+  if $dbpassword {
+    if is_array($dbs) {
+      each($dbs) |$db| {
+        mysql::db { "${name}_${db}":
+          ensure   => $ensure,
+          user     => $name,
+          password => $dbpassword,
+          host     => 'localhost',
+          grant    => ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'ALTER',
+                      'INDEX', 'DROP', 'LOCK TABLES'],
+        }
+      }
+    } else {
+      mysql::db { $name:
         ensure   => $ensure,
         user     => $name,
         password => $dbpassword,
         host     => 'localhost',
         grant    => ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'ALTER',
-                     'INDEX', 'DROP', 'LOCK TABLES'],
+                  'INDEX', 'DROP', 'LOCK TABLES'],
       }
     }
-  } else {
-    mysql::db { $name:
-      ensure   => $ensure,
-      user     => $name,
-      password => $dbpassword,
-      host     => 'localhost',
-      grant    => ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'ALTER',
-                 'INDEX', 'DROP', 'LOCK TABLES'],
-    }
-
   }
 }
 
