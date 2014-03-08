@@ -69,6 +69,9 @@ if [ ! -d /etc/puppet/manifests ]; then mkdir /etc/puppet/manifests; fi
 if [ ! -d /etc/puppet/modules ]; then mkdir /etc/puppet/modules; fi
 if [ ! -d /etc/puppet/hieradata ]; then mkdir /etc/puppet/hieradata; fi
 
+# Enable future parser
+perl -pi -e 's/\[main\]/\[main\]\nparser=future/' /etc/puppet/puppet.conf
+
 # Install some puppet modules
 cd /etc/puppet/modules
 puppet module install puppetlabs-firewall
@@ -86,7 +89,5 @@ wget -O /usr/local/bin/siteadm https://raw.github.com/mikenowak/random/master/pu
 wget -O /etc/puppet/hieradata/$HOSTNAME.yaml https://raw.github.com/mikenowak/random/master/puppet/$HOSTNAME.yaml && chmod 0600 /etc/puppet/hieradata/$HOSTNAME.yaml
 
 puppet apply --show_diff --verbose /etc/puppet/manifests/site.pp
-
-rm $0
 
 init 6
