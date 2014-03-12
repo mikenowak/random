@@ -225,6 +225,8 @@ exit 0
     apache::mod { 'auth_basic': }
     apache::mod { 'authn_file': }
     apache::mod { 'authz_user': }
+    apache::mod { 'proxy': }
+    apache::mod { 'proxy_http': }
 
     # mysql
     class { '::mysql::server':
