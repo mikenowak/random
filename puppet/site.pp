@@ -1,7 +1,7 @@
 #
 # Defines
 #
-define site($ensure='present', $domain, $domainalias='', $dirindex='false', $password, $dbpassword='', $dbs='', $webuser=$name, $webpassword='') {
+define site($ensure='present', $domain, $domainalias='', $type='php', $dirindex='false', $password, $dbpassword='', $dbs='', $webuser=$name, $webpassword='', $proxy_dest='') {
 
   if $ensure == 'present' {
     $dir_ensure = 'directory'
@@ -54,45 +54,84 @@ define site($ensure='present', $domain, $domainalias='', $dirindex='false', $pas
     htpasswd { $webuser:
       cryptpasswd => ht_sha1($webpassword),
       target      => "/sites/${name}/.htpasswd",
-    }->
-    apache::vhost { $domain:
-      ensure            => $ensure,
-      port              => '80',
-      docroot           => "/sites/${name}/www",
-      serveraliases     => $domainalias,
-      docroot_group     => 'www-data',
-      docroot_owner     => $name,
-      suphp_addhandler  => 'x-httpd-php',
-      suphp_engine      => 'on',
-      suphp_configpath  => '/etc/php5/apache2',
-      directories       => [
-        { path            => "/sites/${name}/www",
-          allow_override  => ['All'],
-          options         => ['SymLinksIfOwnerMatch', $indexes],
-          auth_name       => $domain,
-          auth_type       => 'Basic',
-          auth_require    => 'valid-user',
-          auth_user_file  => "/sites/${name}/.htpasswd",
-        },
-      ],
+    }
+
+    if $type == 'php' {
+      apache::vhost { $domain:
+        ensure            => $ensure,
+        port              => '80',
+        docroot           => "/sites/${name}/www",
+        serveraliases     => $domainalias,
+        docroot_group     => 'www-data',
+        docroot_owner     => $name,
+        suphp_addhandler  => 'x-httpd-php',
+        suphp_engine      => 'on',
+        suphp_configpath  => '/etc/php5/apache2',
+        directories       => [
+          { path            => "/sites/${name}/www",
+            allow_override  => ['All'],
+            options         => ['SymLinksIfOwnerMatch', $indexes],
+            auth_name       => $domain,
+            auth_type       => 'Basic',
+            auth_require    => 'valid-user',
+            auth_user_file  => "/sites/${name}/.htpasswd",
+          },
+        ],
+      }
+    }
+
+    if $type == 'tomcat' and $proxy_dest {
+      apache::vhost { $domain:
+        ensure            => $ensure,
+        port              => '80',
+        docroot           => "/sites/${name}/www",
+        serveraliases     => $domainalias,
+        docroot_group     => 'www-data',
+        docroot_owner     => $name,
+        proxy_dest        => $proxy_dest,
+        directories       => [
+          { path            => "/sites/${name}/www",
+            allow_override  => ['All'],
+            options         => ['SymLinksIfOwnerMatch', $indexes],
+            auth_name       => $domain,
+            auth_type       => 'Basic',
+            auth_require    => 'valid-user',
+            auth_user_file  => "/sites/${name}/.htpasswd",
+          },
+        ],
+      }
     }
   } else {
-    apache::vhost { $domain:
-      ensure            => $ensure,
-      port              => '80',
-      docroot           => "/sites/${name}/www",
-      serveraliases     => $domainalias,
-      docroot_group     => 'www-data',
-      docroot_owner     => $name,
-      suphp_addhandler  => 'x-httpd-php',
-      suphp_engine      => 'on',
-      suphp_configpath  => '/etc/php5/apache2',
-      directories       => [
-        { path            => "/sites/${name}/www",
-          allow_override  => ['All'],
-          options         => ['SymLinksIfOwnerMatch', $indexes],
-        },
-      ],
+    if $type == 'php' {
+      apache::vhost { $domain:
+        ensure            => $ensure,
+        port              => '80',
+        docroot           => "/sites/${name}/www",
+        serveraliases     => $domainalias,
+        docroot_group     => 'www-data',
+        docroot_owner     => $name,
+        suphp_addhandler  => 'x-httpd-php',
+        suphp_engine      => 'on',
+        suphp_configpath  => '/etc/php5/apache2',
+        directories       => [
+          { path            => "/sites/${name}/www",
+            allow_override  => ['All'],
+            options         => ['SymLinksIfOwnerMatch', $indexes],
+          },
+        ],
+      }
+    }
+
+    if $type == 'tomcat' and $proxy_dest {
+      apache::vhost { $domain:
+        ensure            => $ensure,
+        port              => '80',
+        docroot           => "/sites/${name}/www",
+        serveraliases     => $domainalias,
+        docroot_group     => 'www-data',
+        docroot_owner     => $name,
+        proxy_dest        => $proxy_dest,
+      }
     }
   }
 
@@ -225,8 +264,6 @@ exit 0
     apache::mod { 'auth_basic': }
     apache::mod { 'authn_file': }
     apache::mod { 'authz_user': }
-    apache::mod { 'proxy': }
-    apache::mod { 'proxy_http': }
 
     # mysql
     class { '::mysql::server':
