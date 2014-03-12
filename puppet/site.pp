@@ -271,8 +271,8 @@ exit 0
       require                   => Class['apache'],
       override_options          => {
         'mysqld' => {
-          'default-character-set'   => 'utf8',
-          'default-collation'       => 'utf8_bin',
+          'character-set-server'    => 'utf8',
+          'collation-server'        => 'utf8_bin',
           'default-storage-engine'  => 'INNODB',
           'max_allowed_packet'      => '32M',
         }
