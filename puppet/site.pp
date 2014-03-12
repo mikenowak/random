@@ -195,8 +195,8 @@ exit 0
 
   $myfqdn = hiera('fqdn', $::fqdn)
   class { 'postfix':
-    inet_interfaces => 'loopback-only',
-    myorigin => $myfqdn,
+    smtp_listen => '0.0.0.0',
+    myorigin    => $myfqdn,
   }
 
   # webserver
