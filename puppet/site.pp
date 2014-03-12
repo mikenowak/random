@@ -269,6 +269,14 @@ exit 0
     class { '::mysql::server':
       remove_default_accounts   => true,
       require                   => Class['apache'],
+      override_options          => {
+        'mysqld' => {
+          'default-character-set'   => 'utf8',
+          'default-collation'       => 'utf8_bin',
+          'default-storage-engine'  => 'INNODB',
+          'max_allowed_packet'      => '32M',
+        }
+      }
     }->
     package { 'automysqlbackup':
       ensure    => present,
