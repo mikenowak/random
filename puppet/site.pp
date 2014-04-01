@@ -1,7 +1,7 @@
 #
 # Defines
 #
-define site($ensure='present', $domain, $domainalias='', $type='php', $dirindex='false', $password, $dbpassword='', $dbs='', $webuser=$name, $webpassword='', $proxy_dest='') {
+define site($ensure='present', $domain, $domainalias='', $ssl=false, $type='php', $dirindex='false', $password, $dbpassword='', $dbs='', $webuser=$name, $webpassword='', $proxy_dest='') {
 
   if $ensure == 'present' {
     $dir_ensure = 'directory'
@@ -56,10 +56,13 @@ define site($ensure='present', $domain, $domainalias='', $type='php', $dirindex=
       target      => "/sites/${name}/.htpasswd",
     }
 
+    if $ssl == true { $port = 443 } else { $port = 80 }
+
     if $type == 'php' {
       apache::vhost { $domain:
         ensure            => $ensure,
-        port              => '80',
+        port              => $port,
+        ssl               => $ssl,
         docroot           => "/sites/${name}/www",
         serveraliases     => $domainalias,
         docroot_group     => 'www-data',
@@ -83,7 +86,8 @@ define site($ensure='present', $domain, $domainalias='', $type='php', $dirindex=
     if $type == 'tomcat' and $proxy_dest {
       apache::vhost { $domain:
         ensure            => $ensure,
-        port              => '80',
+        port              => $port,
+        ssl               => $ssl,
         docroot           => "/sites/${name}/www",
         serveraliases     => $domainalias,
         docroot_group     => 'www-data',
@@ -105,7 +109,8 @@ define site($ensure='present', $domain, $domainalias='', $type='php', $dirindex=
     if $type == 'php' {
       apache::vhost { $domain:
         ensure            => $ensure,
-        port              => '80',
+        port              => $port,
+        ssl               => $ssl,
         docroot           => "/sites/${name}/www",
         serveraliases     => $domainalias,
         docroot_group     => 'www-data',
@@ -125,7 +130,8 @@ define site($ensure='present', $domain, $domainalias='', $type='php', $dirindex=
     if $type == 'tomcat' and $proxy_dest {
       apache::vhost { $domain:
         ensure            => $ensure,
-        port              => '80',
+        port              => $port,
+        ssl               => $ssl,
         docroot           => "/sites/${name}/www",
         serveraliases     => $domainalias,
         docroot_group     => 'www-data',
