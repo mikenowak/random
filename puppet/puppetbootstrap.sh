@@ -81,6 +81,7 @@ puppet module install leinaddm-htpasswd
 #puppet module install puppetlabs-apache
 git clone https://github.com/puppetlabs/puppetlabs-apache.git apache
 puppet module install puppetlabs-mysql
+puppet module install camptocamp-postfix
 
 # And some configs
 wget -O /etc/puppet/manifests/site.pp https://raw.github.com/mikenowak/random/master/puppet/site.pp
