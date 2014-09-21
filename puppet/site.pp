@@ -389,8 +389,8 @@ Match group www-data
     }
 
     # create hosted accounts
-    if hiera('sites') {
-      $sites = hiera('sites')
+    if hiera('sites', '') {
+      $sites = hiera('sites', '')
       create_resources(site, $sites)
     }
   }
