@@ -41,7 +41,7 @@ define site($ensure='present', $domain, $domainalias='', $ssl=false, $type='php'
     backup  => false,
   }
 
-  if $webpassword {
+  if $webpassword != '' {
 
     file { "/sites/${name}/.htpasswd":
       ensure  => present,
@@ -83,7 +83,7 @@ define site($ensure='present', $domain, $domainalias='', $ssl=false, $type='php'
       }
     }
 
-    if $type == 'tomcat' and $proxy_dest {
+    if $type == 'tomcat' and $proxy_dest != '' {
       apache::vhost { $domain:
         ensure            => $ensure,
         port              => $port,
@@ -127,7 +127,7 @@ define site($ensure='present', $domain, $domainalias='', $ssl=false, $type='php'
       }
     }
 
-    if $type == 'tomcat' and $proxy_dest {
+    if $type == 'tomcat' and $proxy_dest != '' {
       apache::vhost { $domain:
         ensure            => $ensure,
         port              => $port,
@@ -141,7 +141,7 @@ define site($ensure='present', $domain, $domainalias='', $ssl=false, $type='php'
     }
   }
 
-  if $dbpassword {
+  if $dbpassword != '' {
     if is_array($dbs) {
       each($dbs) |$db| {
         mysql::db { "${name}_${db}":
