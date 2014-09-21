@@ -71,6 +71,8 @@ if [ ! -d /etc/puppet/hieradata ]; then mkdir /etc/puppet/hieradata; fi
 
 # Enable future parser
 perl -pi -e 's/\[main\]/\[main\]\nparser=future/' /etc/puppet/puppet.conf
+# Remove obsolete templatedir setting
+perl -pi -e 's/^templatedir=.*//' /etc/puppet/puppet.conf
 
 # Install some puppet modules
 cd /etc/puppet/modules
