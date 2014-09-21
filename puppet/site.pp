@@ -41,6 +41,9 @@ define site($ensure='present', $domain, $domainalias='', $ssl=false, $type='php'
     backup  => false,
   }
 
+
+  if $ssl == true { $port = 443 } else { $port = 80 }
+
   if $webpassword != '' {
 
     file { "/sites/${name}/.htpasswd":
@@ -55,8 +58,6 @@ define site($ensure='present', $domain, $domainalias='', $ssl=false, $type='php'
       cryptpasswd => ht_sha1($webpassword),
       target      => "/sites/${name}/.htpasswd",
     }
-
-    if $ssl == true { $port = 443 } else { $port = 80 }
 
     if $type == 'php' {
       apache::vhost { $domain:
