@@ -172,8 +172,6 @@ define site($ensure='present', $domain, $domainalias='', $ssl=false, $type='php'
 
 if $::operatingsystem == 'Ubuntu' {
 
-  include concat::setup
-
   # Remove some unwanted packages
   package {[ 'whoopsie', 'landscape-common', 'ntpdate', 'tmux', 'ppp',
             'apport', 'pppconfig', 'pppoeconf', 'wpasupplicant',
