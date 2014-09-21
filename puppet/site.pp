@@ -32,7 +32,7 @@ define site($ensure='present', $domain, $domainalias='', $ssl=false, $type='php'
     backup  => false,
   }->
   file { [ "/sites/${name}/www",
-        "/sites/${name}/tmp", "/sites/${name}/backups" ]:
+        "/sites/${name}/tmp", "/sites/${name}/backup" ]:
     ensure  => $dir_ensure,
     owner   => $name,
     group   => 'www-data',
