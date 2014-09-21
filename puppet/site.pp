@@ -73,7 +73,7 @@ define site($ensure='present', $domain, $domainalias='', $ssl=false, $type='php'
         directories       => [
           { path            => "/sites/${name}/www",
             allow_override  => ['All'],
-            options         => ['SymLinksIfOwnerMatch', $indexes],
+            options         => ['+SymLinksIfOwnerMatch', $indexes],
             auth_name       => $domain,
             auth_type       => 'Basic',
             auth_require    => 'valid-user',
@@ -96,7 +96,7 @@ define site($ensure='present', $domain, $domainalias='', $ssl=false, $type='php'
         directories       => [
           { path            => "/sites/${name}/www",
             allow_override  => ['All'],
-            options         => ['SymLinksIfOwnerMatch', $indexes],
+            options         => ['+SymLinksIfOwnerMatch', $indexes],
             auth_name       => $domain,
             auth_type       => 'Basic',
             auth_require    => 'valid-user',
@@ -121,7 +121,7 @@ define site($ensure='present', $domain, $domainalias='', $ssl=false, $type='php'
         directories       => [
           { path            => "/sites/${name}/www",
             allow_override  => ['All'],
-            options         => ['SymLinksIfOwnerMatch', $indexes],
+            options         => ['+SymLinksIfOwnerMatch', $indexes],
           },
         ],
       }
