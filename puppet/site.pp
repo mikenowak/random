@@ -239,8 +239,9 @@ exit 0
 
   $myfqdn = hiera('fqdn', $::fqdn)
   class { 'postfix':
-    smtp_listen => '0.0.0.0',
-    myorigin    => $myfqdn,
+    smtp_listen           => '0.0.0.0',
+    root_mail_recipient   => hiera('rootmail', 'nobody'),
+    myorigin              => $myfqdn,
   }
 
   # webserver
