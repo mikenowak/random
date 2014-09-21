@@ -255,7 +255,7 @@ exit 0
 
     # apache
     class { 'apache':
-      default_vhost     => true,
+      default_vhost     => false
       default_mods      => false,
       purge_configs     => true,
       server_tokens     => 'Prod',
@@ -269,6 +269,18 @@ exit 0
     apache::mod { 'auth_basic': }
     apache::mod { 'authn_file': }
     apache::mod { 'authz_user': }
+
+    ::apache::vhost { 'blank':
+      ensure          => present,
+      port            => 80,
+      docroot         => '/var/www/html',
+      access_log_file => 'access.log',
+      error_log_file  => 'error.log',
+      priority        => '10',
+      logroot_mode    => $::apache::params::logroot_mode,
+      redirect_status => 'permanent',
+      redirect_dest   => hiera('http_blank_redirect', 'http://www.google.com')
+    }
 
     # mysql
     class { '::mysql::server':
