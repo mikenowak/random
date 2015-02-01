@@ -267,6 +267,8 @@ exit 0
     class { 'apache::mod::mime': }
     class { 'apache::mod::dir': }
     class { 'apache::mod::autoindex': }
+    class { 'apache::mod::headers': }
+    class { 'apache::mod::deflate': }
     apache::mod { 'authn_core': }
     apache::mod { 'access_compat': }
     apache::mod { 'auth_basic': }
